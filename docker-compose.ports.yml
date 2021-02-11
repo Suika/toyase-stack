@@ -1,0 +1,30 @@
+# https://soundcloud.com/dy-ako/peko-peko-peko
+version: "2.1"
+services:
+  seaweed-master:
+    ports:
+      - 127:0.0.1:9333:9333
+      - 127:0.0.1:19333:19333
+
+  seaweed-volume-1:
+    ports:
+      - 127:0.0.1:8080:8080
+      - 127:0.0.1:18080:18080
+
+  seaweed-filer:
+    ports:
+      - 7865:7865
+      - 127:0.0.1:8888:8888
+      - 127:0.0.1:18888:18888
+
+  seaweed-s3:
+    ports:
+      - 127:0.0.1:8333:8333
+
+  4chan-scrape-db:
+    ports:
+      - 127:0.0.1:3306:3306
+
+  torako:
+    ports:
+      - 127:0.0.1:2377:2377
