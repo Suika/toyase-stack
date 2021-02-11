@@ -164,9 +164,9 @@ reports = false
 ## Torako sha256 folder structure.
 ## If you are using sha256 with seaweedfs, with thumbs and images in the same folder,
 ## use this image_location format.
- [image_location]
- image = "http://127.0.0.1:7865/buckets/asagi-images"
- thumb = "http://127.0.0.1:7865/buckets/asagi-thumbs"
+[image_location]
+image = "http://127.0.0.1:7865/buckets/asagi-images"
+thumb = "http://127.0.0.1:7865/buckets/asagi-thumbs"
 
 ## OpenAPI scraper info (currently unused).
 [scraper]
