@@ -7,6 +7,8 @@ Non-local access is outside the current scope.
 * [Install docker-compose](https://docs.docker.com/compose/install/)
 
 ## Quickstart
+Quick^Quick: `git clone https://github.com/Suika/toyase-stack ; bash startup.sh`
+
 ```
 git clone https://github.com/Suika/toyase-stack
 
