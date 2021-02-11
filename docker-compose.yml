@@ -1,0 +1,91 @@
+# https://soundcloud.com/dy-ako/peko-peko-peko
+version: "2.1"
+services:
+  seaweed-master:
+    image: chrislusf/seaweedfs:2.24_large_disk
+    container_name: seaweed-master
+    command: "master -ip=seaweed-master -volumeSizeLimitMB=20000"
+    stop_grace_period: 1m
+    restart: always
+    volumes:
+      - ./config/master.toml:/etc/seaweedfs/master.toml
+      - ./seaweedfs/master:/data
+    networks:
+      - foolstack
+
+  seaweed-volume-1:
+    image: chrislusf/seaweedfs:2.24_large_disk
+    container_name: seaweed-volume-1
+    command: 'volume -mserver="seaweed-master:9333" -port=8080 -dataCenter=asagi -rack=hdd'
+    stop_grace_period: 1m
+    restart: always
+    volumes:
+      - ./seaweedfs/seaweed-volume-1:/data
+    networks:
+      - foolstack
+    depends_on:
+      seaweed-master:
+          condition: service_started
+
+  seaweed-filer:
+    image: chrislusf/seaweedfs:2.24_large_disk
+    container_name: seaweed-filer
+    command: 'filer -master="seaweed-master:9333" -disableDirListing -port.readonly=7865'
+    stop_grace_period: 1m
+    tty: true
+    stdin_open: true
+    environment:
+      WEED_LEVELDB2_ENABLED: 'true'
+      WEED_LEVELDB2_DIR: '/data'
+    restart: always
+    volumes:
+      - ./seaweedfs/filer:/data
+    ports:
+      - 7865:7865
+    networks:
+      - foolstack
+    depends_on:
+      seaweed-master:
+          condition: service_started
+      seaweed-volume-1:
+          condition: service_started
+
+  seaweed-s3:
+    image: chrislusf/seaweedfs:2.24_large_disk
+    container_name: seaweed-s3
+    command: 's3 -filer="seaweed-filer:8888" -config=/config.json'
+    stop_grace_period: 1m
+    restart: always
+    volumes:
+      - ./config/seaweed_s3.json:/config.json:ro
+    networks:
+      - foolstack
+    depends_on:
+      seaweed-master:
+          condition: service_started
+      seaweed-filer:
+          condition: service_started
+      seaweed-volume-1:
+          condition: service_started
+
+  4chan-scrape-db:
+    image: mysql:8
+    container_name: 4chan-scrape-db
+    command: ["--default-authentication-plugin=mysql_native_password", 
+              "--log_bin_trust_function_creators=1",
+              "--innodb-buffer-pool-size=10G", 
+              "--character-set-server=utf8mb4"]
+    restart: always
+    cap_add:
+      - SYS_NICE
+    environment:
+      MYSQL_ROOT_PASSWORD: 'bunbuncha'
+      MYSQL_DATABASE: 'asagi'
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - foolstack
+
+networks:
+  foolstack:
+    name: foolstack

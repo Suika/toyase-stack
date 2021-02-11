@@ -1,0 +1,34 @@
+# https://soundcloud.com/dy-ako/peko-peko-peko
+version: "2.1"
+services:
+  torako:
+    image: suika/ayase:torako
+    container_name: torako
+    # Torako takes it's sweet time to finish downloads and so should you
+    stop_grace_period: 10m
+    restart: always
+    volumes:
+      - ./config/torako.toml:/Torako.toml
+    networks:
+      - foolstack
+    depends_on:
+      4chan-scrape-db:
+          condition: service_started
+      seaweed-s3:
+          condition: service_started
+
+  ayase:
+    image: ghcr.io/bibanon/ayase:latest
+    container_name: ayase
+    # Use suika/ayase:torako if you main and images tables have different character sets and collate
+    command: ["uvicorn","view.asagi:app", "--host", "0.0.0.0"]
+    restart: always
+    volumes:
+      - ./config/ayase.config.toml:/opt/ayase/config.toml
+    ports:
+      - 29080:8000
+    networks:
+      - foolstack
+    depends_on:
+      4chan-scrape-db:
+          condition: service_started
