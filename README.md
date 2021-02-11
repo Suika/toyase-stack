@@ -15,7 +15,7 @@ git clone https://github.com/Suika/toyase-stack
 docker-compose -f "docker-compose.yml" -f "docker-compose.ayase.yml" pull
 docker-compose -f "docker-compose.yml" up -d
 
-docker exec -it seaweed-master /usr/bin/weed -master=seaweed-master:9333 -filer=seaweed-filer:8888 <<EOF
+docker exec -i seaweed-master /usr/bin/weed shell -master=seaweed-master:9333 -filer=seaweed-filer:8888 <<EOF
 s3.bucket.create -name asagi-thumbs
 s3.bucket.create -name asagi-images
 exit
