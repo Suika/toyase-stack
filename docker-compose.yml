@@ -2,48 +2,55 @@
 version: "2.1"
 services:
   seaweed-master:
-    image: chrislusf/seaweedfs:2.24_large_disk
     container_name: seaweed-master
+    image: chrislusf/seaweedfs:2.24_large_disk
     command: "master -ip=seaweed-master -volumeSizeLimitMB=20000"
-    stop_grace_period: 1m
     restart: always
-    volumes:
-      - ./config/master.toml:/etc/seaweedfs/master.toml
-      - ./seaweedfs/master:/data
     networks:
       - foolstack
+    #ports:
+    #  - 127:0.0.1:9333:9333
+    #  - 127:0.0.1:19333:19333
+    volumes:
+      - ./master.toml:/etc/seaweedfs/master.toml
+      - ./seaweedfs/master/data:/data
 
   seaweed-volume-1:
-    image: chrislusf/seaweedfs:2.24_large_disk
     container_name: seaweed-volume-1
-    command: 'volume -mserver="seaweed-master:9333" -port=8080 -dataCenter=asagi -rack=hdd'
-    stop_grace_period: 1m
+    image: chrislusf/seaweedfs:2.24_large_disk
     restart: always
-    volumes:
-      - ./seaweedfs/seaweed-volume-1:/data
     networks:
       - foolstack
+    volumes:
+      - ./seaweedfs/seaweed-volume-1:/data
+    #ports:
+    #  - 127:0.0.1:8080:8080
+    #  - 127:0.0.1:18080:18080
+    command: 'volume -mserver="seaweed-master:9333" -port=8080 -dataCenter=asagi -rack=hdd -max=32'
     depends_on:
       seaweed-master:
           condition: service_started
 
   seaweed-filer:
-    image: chrislusf/seaweedfs:2.24_large_disk
     container_name: seaweed-filer
-    command: 'filer -master="seaweed-master:9333" -disableDirListing -port.readonly=7865'
-    stop_grace_period: 1m
-    tty: true
-    stdin_open: true
-    environment:
-      WEED_LEVELDB2_ENABLED: 'true'
-      WEED_LEVELDB2_DIR: '/data'
+    image: chrislusf/seaweedfs:2.24_large_disk
     restart: always
-    volumes:
-      - ./seaweedfs/filer:/data
-    ports:
-      - 7865:7865
     networks:
       - foolstack
+    ports:
+      - 127.0.0.1:7865:7865 ## Readonly port, for serving ayase images.
+    #  - 127:0.0.1:8888:8888
+    #  - 127:0.0.1:18888:18888
+    environment:
+      WEED_LEVELDB2_ENABLED: 'true'
+      WEED_LEVELDB2_DIR: '/filerldb2'
+    #command: 'filer -master="seaweed-master:9333" -disableDirListing -port.readonly=7865'
+    command: 'filer -master="seaweed-master:9333" -port.readonly=7865'
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./seaweedfs/filer:/data
+      - ./seaweedfs/filer/filerldb2:/filerldb2
     depends_on:
       seaweed-master:
           condition: service_started
@@ -53,13 +60,14 @@ services:
   seaweed-s3:
     image: chrislusf/seaweedfs:2.24_large_disk
     container_name: seaweed-s3
-    command: 's3 -filer="seaweed-filer:8888" -config=/config.json'
-    stop_grace_period: 1m
     restart: always
-    volumes:
-      - ./config/seaweed_s3.json:/config.json:ro
     networks:
       - foolstack
+    #ports:
+    #  - 127:0.0.1:8333:8333
+    command: 's3 -filer="seaweed-filer:8888" -config=/config.json'
+    volumes:
+      - ./config.json:/config.json:ro
     depends_on:
       seaweed-master:
           condition: service_started
@@ -81,10 +89,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 'bunbuncha'
       MYSQL_DATABASE: 'asagi'
-    volumes:
-      - ./mysql/data:/var/lib/mysql
     networks:
       - foolstack
+    #ports:
+    #  - 127:0.0.1:3306:3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
 
 networks:
   foolstack:
