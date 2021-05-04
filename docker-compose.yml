@@ -2,7 +2,7 @@
 version: "2.1"
 services:
   seaweed-master:
-    image: chrislusf/seaweedfs:2.24_large_disk
+    image: chrislusf/seaweedfs:2.43_large_disk
     container_name: seaweed-master
     command: "master -ip=seaweed-master -volumeSizeLimitMB=20000"
     stop_grace_period: 1m
@@ -14,7 +14,7 @@ services:
       - foolstack
 
   seaweed-volume-1:
-    image: chrislusf/seaweedfs:2.24_large_disk
+    image: chrislusf/seaweedfs:2.43_large_disk
     container_name: seaweed-volume-1
     command: 'volume -mserver="seaweed-master:9333" -port=8080 -dataCenter=asagi -rack=hdd'
     stop_grace_period: 1m
@@ -28,7 +28,7 @@ services:
           condition: service_started
 
   seaweed-filer:
-    image: chrislusf/seaweedfs:2.24_large_disk
+    image: chrislusf/seaweedfs:2.43_large_disk
     container_name: seaweed-filer
     command: 'filer -master="seaweed-master:9333" -disableDirListing -port.readonly=7865'
     stop_grace_period: 1m
@@ -51,7 +51,7 @@ services:
           condition: service_started
 
   seaweed-s3:
-    image: chrislusf/seaweedfs:2.24_large_disk
+    image: chrislusf/seaweedfs:2.43_large_disk
     container_name: seaweed-s3
     command: 's3 -filer="seaweed-filer:8888" -config=/config.json'
     stop_grace_period: 1m
